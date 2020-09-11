@@ -4,7 +4,6 @@ import argparse
 import configparser
 import os
 import sys
-import subprocess
 import curses
 
 try:
@@ -126,9 +125,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     def _connect(servicename):
-        env = dict(os.environ)
-        env['PGSERVICEFILE'] = os.path.abspath(servicefile)
-
         parg = "service={}".format(servicename)
         if cfg.has_option(servicename, 'hostaddr') and \
            cfg.get(servicename, 'hostaddr').startswith('!'):
@@ -142,7 +138,9 @@ if __name__ == "__main__":
         if args.verbose:
             print("Executing: psql {}".format(parg))
 
-        subprocess.run(["psql", parg], env=env)
+        os.environ['PGSERVICEFILE'] = os.path.abspath(servicefile)
+        os.execvp("psql", ["psql", parg, ])
+
 
     if len(services) == 1:
         _connect(services[0])
